@@ -19,11 +19,15 @@ function generateMD5Hash(key) {
 const app = express.Router()
 
 // Initialize the SQLite database
-const db = new sqlite3.Database('./data.db', (err) => {
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const db = new sqlite3.Database(join(__dirname, '../data.db'), (err) => {
     if (err) {
         console.error(err.message);
     }
-    console.log('Connected to the SQLite database.');
+    console.log('Connected to the SQLite database:', join(__dirname, '../data.db'));
 });
 
 app.get('/', async (req, res) => {
@@ -59,11 +63,13 @@ app.get('/', async (req, res) => {
     }
 
     // Assuming sensorica_client_id corresponds to the envatoLicense in the envatoLicenseKeys table
+    console.log('Searching for sensoricaClientId:', sensoricaClientId);
     db.get('SELECT url,envatoLicense FROM envatoLicenseKeys WHERE id = ?', [sensoricaClientId], async (err, row) => {
         if (err) {
             console.error(err.message);
             return res.status(500).json({ error: 'Database error' });
         }
+        console.log('Database result row:', row);
         if (row) {
 
             //check if the url is valid and not contain api (prevent infinite loop) 
